@@ -50,15 +50,16 @@ function CreditsPage() {
                     <div className="col-span-2 flex justify-center py-12">
                         <div className="animate-spin h-8 w-8 border-4 border-[var(--color-primary)] border-t-transparent rounded-full"></div>
                     </div>
+                ) : plans && plans.items && plans.items.length > 0 ? (
+                    plans.items.flatMap((product: any) =>
+                        (product.prices ?? [])
+                            .filter((price: any) => price && price.id)
+                            .map((price: any) => (
+                                <Credits key={price.id} price={price} />
+                            ))
+                    )
                 ) : (
-                    plans?.items?.map((product: any) => (
-                        product.prices.map((price: any) => (
-                            <Credits
-                                key={price.id}
-                                price={price}
-                            />
-                        ))
-                    ))
+                    <p className="col-span-2 text-center text-[var(--color-neutral-600)]">No plans available.</p>
                 )}
             </div>
 

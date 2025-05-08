@@ -6,17 +6,20 @@ import { api } from "../../convex/_generated/api";
 import { Button } from "./ui/button";
 
 export function Credits({ price }: any) {
+  // If price is undefined or missing id, do not render
+  if (!price?.id) return null;
+  const priceId = price.id;
   const { isLoaded } = useUser();
   const getImageCheckoutUrl = useAction(api.transactions.getImagePackCheckoutUrl);
 
   const handleCheckout = useCallback(async () => {
     try {
-      const checkoutUrl = await getImageCheckoutUrl({ priceId: price.id });
+      const checkoutUrl = await getImageCheckoutUrl({ priceId });
       if (checkoutUrl) window.location.href = checkoutUrl;
     } catch (error) {
       console.error("Failed to get checkout URL:", error);
     }
-  }, [getImageCheckoutUrl, price.id]);
+  }, [getImageCheckoutUrl, priceId]);
 
   return (
     <div className="group border relative rounded-[32px] bg-white p-8 transition-all hover:scale-[1.01] hover:shadow-lg ">
