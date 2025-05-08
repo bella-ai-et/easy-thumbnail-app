@@ -1,4 +1,4 @@
-import { SignInButton, useUser } from "@clerk/clerk-react";
+import { useUser, SignInButton } from "@clerk/clerk-react";
 import { Authenticated, Unauthenticated, useAction } from "convex/react";
 import { CheckCircle } from "lucide-react";
 import { useCallback } from "react";

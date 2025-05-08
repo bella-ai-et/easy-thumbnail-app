@@ -425,6 +425,7 @@ export default function ThumbnailEditor() {
                 <label className="relative cursor-pointer rounded-md font-medium text-primary hover:text-primary-dark">
                   <span>Upload an image</span>
                   <input
+                    ref={fileInputRef}
                     type="file"
                     className="sr-only"
                     accept="image/*"

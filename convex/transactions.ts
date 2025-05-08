@@ -42,12 +42,10 @@ const createCheckout = async ({
 
     // Create a one-time payment checkout
     const result = await polar.checkouts.create({
-        ...({
-            product_price_id: productPriceId,
-            success_url: fullSuccessUrl,
-            customer_email: customerEmail,
-            metadata
-        } as any)
+        productPriceId: productPriceId,
+        successUrl: fullSuccessUrl,
+        customerEmail: customerEmail,
+        metadata: metadata
     });
 
     return result;
@@ -136,7 +134,7 @@ export const getImagePackCheckoutUrl = action({
             metadata: {
                 userId: user.userId,
                 // This is a one-time payment for 10 image generations
-                purchaseType: "image_pack",
+                purchaseType: "imagePack",
                 quantity: "10"
             }
         });
@@ -323,7 +321,7 @@ export const paymentWebhookHandler = mutation({
                     amount: args.body.data.amount,
                     currency: args.body.data.currency,
                     status: args.body.data.status,
-                    purchaseType: "image_pack",
+                    purchaseType: "imagePack",
                     quantity: quantity,
                     createdAt: new Date().toISOString(),
                     modifiedAt: new Date().toISOString()
