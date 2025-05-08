@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import CartoonHero from '../components/cartoon-hero';
+import ThumbnailEditor from '../components/thumbnail-editor';
 
 export const Route = createFileRoute('/')({
     component: Index,
@@ -8,6 +8,6 @@ export const Route = createFileRoute('/')({
 
 function Index() {
     return (
-        <CartoonHero />
+        <ThumbnailEditor />
     )
 }

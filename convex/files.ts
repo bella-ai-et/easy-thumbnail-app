@@ -120,8 +120,8 @@ export const getImageByStorageId = query({
   },
 });
 
-// Generate a cartoon version from original image
-export const cartoonifyImage = mutation({
+/* DEPRECATED: Cartoon-specific mutations start */
+/* export const cartoonifyImage = mutation({
   args: { storageId: v.string(), style: v.string() },
   handler: async (ctx, args) => {
     // Find the image record by storage ID
@@ -150,6 +150,7 @@ export const cartoonifyImage = mutation({
     await ctx.db.patch(image._id, {
       status: "processing",
       updatedAt: Date.now(),
+      type: "cartoon",
     });
     
     try {
@@ -157,7 +158,8 @@ export const cartoonifyImage = mutation({
       await ctx.scheduler.runAfter(0, internal.image.ImageGen, {
         imageUrl: image.originalImageUrl!,
         userId: image.userId,
-        style: args.style
+        style: args.style,
+        // preserve type for job
       });
       
       // The ImageGen action will update the image record when it completes
@@ -175,10 +177,9 @@ export const cartoonifyImage = mutation({
       throw new ConvexError("Failed to schedule image generation");
     }
   },
-});
+}); */
 
-// Upload a cartoon image to storage and update the image record
-export const uploadCartoonImage = mutation({
+/* export const uploadCartoonImage = mutation({
   args: {
     imageId: v.id("images"),
   },
@@ -212,10 +213,9 @@ export const uploadCartoonImage = mutation({
       base64Data: image.cartoonStorageId,
     };
   },
-});
+}); */
 
-// Update the image record with the storage ID after upload
-export const updateCartoonImageStorage = mutation({
+/* export const updateCartoonImageStorage = mutation({
   args: {
     imageId: v.id("images"),
     storageId: v.string(),
@@ -254,7 +254,8 @@ export const updateCartoonImageStorage = mutation({
 
     return cartoonImageUrl;
   },
-});
+}); */
+/* DEPRECATED: Cartoon-specific mutations end */
 
 // Upload a base64 image to storage and get a clickable URL
 export const uploadBase64Image = mutation({
@@ -391,5 +392,68 @@ export const getUserProcessingImages = query({
       .collect();
 
     return processingImages;
+  },
+});
+
+// Generate a thumbnail version from original image
+export const generateThumbnail = mutation({
+  args: { storageId: v.string() },
+  handler: async (ctx, args) => {
+    const images = await ctx.db
+      .query("images")
+      .filter(q => q.eq(q.field("originalStorageId"), args.storageId))
+      .collect();
+    const image = images[0];
+    if (!image) {
+      throw new ConvexError("Image record not found");
+    }
+
+    if (image.status === "processing") {
+      return { success: true, status: "processing" };
+    }
+
+    await ctx.db.patch(image._id, {
+      status: "processing",
+      updatedAt: Date.now(),
+      type: "thumbnail",
+    });
+
+    try {
+      // We assume mergedStorageId & mergedImageUrl are set by the client
+      await ctx.scheduler.runAfter(0, internal.image.ImageGen, {
+        imageUrl: image.mergedImageUrl!,
+        userId: image.userId,
+        style: "thumbnail"
+      });
+      return { success: true, status: "processing" };
+    } catch (error) {
+      await ctx.db.patch(image._id, { status: "pending", updatedAt: Date.now() });
+      throw new ConvexError("Failed to schedule thumbnail generation");
+    }
+  }
+});
+
+// Save the merged annotated image
+export const saveMergedImage = mutation({
+  args: {
+    storageId: v.string(),
+    referenceStorageId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const images = await ctx.db
+      .query("images")
+      .filter(q => q.eq(q.field("originalStorageId"), args.referenceStorageId))
+      .collect();
+    const image = images[0];
+    if (!image) {
+      throw new ConvexError("Image record not found");
+    }
+    const mergedUrl = await ctx.storage.getUrl(args.storageId);
+    await ctx.db.patch(image._id, {
+      mergedStorageId: args.storageId,
+      mergedImageUrl: mergedUrl ?? undefined,
+      updatedAt: Date.now(),
+    });
+    return { success: true };
   },
 });

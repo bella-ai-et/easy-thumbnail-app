@@ -28,6 +28,10 @@ export default defineSchema({
     // Timestamps
     createdAt: v.number(),
     updatedAt: v.number(),
+    // Thumbnail generation metadata
+    type: v.optional(v.string()), // "cartoon" | "thumbnail"
+    mergedStorageId: v.optional(v.string()),
+    mergedImageUrl: v.optional(v.string()),
   }).index("by_user", ["userId"]),
   webhookEvents: defineTable({
     type: v.string(),
