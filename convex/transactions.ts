@@ -42,10 +42,12 @@ const createCheckout = async ({
 
     // Create a one-time payment checkout
     const result = await polar.checkouts.create({
-        productPriceId: productPriceId,
-        successUrl: fullSuccessUrl,
-        customerEmail: customerEmail,
-        metadata
+        ...({
+            product_price_id: productPriceId,
+            success_url: fullSuccessUrl,
+            customer_email: customerEmail,
+            metadata
+        } as any)
     });
 
     return result;
